@@ -2,7 +2,9 @@
 function neuron = Process_cnmfe(filename, varargin)
 
 %% clear the workspace and select data 
-% clear; clc; close all;
+%clear; clc; close all;
+
+%filename = '/media/DataAdrienBig/PeyracheLabData/Guillaume/A0600/A0634/A0634-201124/A0634-201124.h5';
 
 %% choose multiple datasets or just one  
 neuron = Sources2D(); 
@@ -16,17 +18,20 @@ nams = neuron.select_multiple_files(nams);
 %     'memory_size_per_patch', 1, ...   % GB, space for loading data within one patch 
 %     'patch_dims', [64, 64],...  %GB, patch size 
 %     'batch_frames', 400);           % number of frames per batch 
-pars_envs = struct('memory_size_to_use', 64, ...   % GB, memory space you allow to use in MATLAB 
+pars_envs = struct('memory_size_to_use', 100, ...   % GB, memory space you allow to use in MATLAB 
     'memory_size_per_patch', 16, ...   % GB, space for loading data within one patch 
     'patch_dims', [64, 64],...  %GB, patch size 
-    'batch_frames', 4000);           % number of frames per batch 
+    'batch_frames', 8000);           % number of frames per batch 
   
 % -------------------------      SPATIAL      -------------------------  %
 % gSig = 3;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
 % gSiz = 13;          % pixel, neuron diameter
 
-gSig = 3;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-gSiz = 13;          % pixel, neuron diameter
+% gSig = 8;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+% gSiz = 32;          % pixel, neuron diameter
+
+gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+gSiz = 16;          % pixel, neuron diameter
 
 
 ssub = 1;           % spatial downsampling factor
@@ -48,7 +53,7 @@ spatial_algorithm = 'hals';
 % -------------------------      TEMPORAL     -------------------------  %
 Fs = 30;                % frame rate
 tsub = 1;               % temporal downsampling factor
-deconv_options = struct('type', 'ar1', ... % model of the calcium traces. {'ar1', 'ar2'}
+deconv_options = struct('type', 'ar2', ... % model of the calcium traces. {'ar1', 'ar2'}
     'method', 'foopsi', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
     'smin', -5, ...         % minimum spike size. When the value is negative, the actual threshold is abs(smin)*noise level
     'optimize_pars', true, ...  % optimize AR coefficients
@@ -77,8 +82,8 @@ merge_thr_spatial = [0.8, 0.4, -inf];  % merge components with highly correlated
 
 % -------------------------  INITIALIZATION   -------------------------  %
 K = [];             % maximum number of neurons per patch. when K=[], take as many as possible.
-min_corr = 0.8;     % minimum local correlation for a seeding pixel
-min_pnr = 8;       % minimum peak-to-noise ratio for a seeding pixel
+min_corr = 0.95;     % minimum local correlation for a seeding pixel
+min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
 min_pixel = gSig^2;      % minimum number of nonzero pixels for each neuron
 bd = 0;             % number of rows/columns to be ignored in the boundary (mainly for motion corrected data)
 frame_range = [];   % when [], uses all frames
@@ -90,8 +95,8 @@ center_psf = true;  % set the value as true when the background fluctuation is l
 % set the value as false when the background fluctuation is small (2p)
 
 % -------------------------  Residual   -------------------------  %
-min_corr_res = 0.7;
-min_pnr_res = 6;
+min_corr_res = 0.95;
+min_pnr_res = 12;
 seed_method_res = 'auto';  % method for initializing neurons from the residual
 update_sn = true;
 
@@ -134,14 +139,14 @@ neuron.Fs = Fs;
 neuron.getReady_batch(pars_envs); 
 
 %% initialize neurons in batch mode 
-[center, Cn, PNR] = neuron.initComponents_batch(K, save_initialization, use_parallel); 
+neuron.initComponents_batch(K, save_initialization, use_parallel); 
 
-neuron.compactSpatial();
-figure();
-ax_init= axes();
-imagesc(Cn, [0, 1]); colormap gray;
-hold on;
-plot(center(:, 2), center(:, 1), '.r', 'markersize', 10);
+% neuron.compactSpatial();
+% figure();
+% ax_init= axes();
+% imagesc(Cn, [0, 1]); colormap gray;
+% hold on;
+% plot(center(:, 2), center(:, 1), '.r', 'markersize', 10);
 
 
 %% udpate spatial components for all batches

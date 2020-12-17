@@ -6,9 +6,10 @@ function MasterMiniscopeProcessing(fbasename,varargin)
 
 %clear;
 %fbasename = 'A0634';
-
+%fbasename = 'Test'
 %% Concatenate AVI files
-spatial_downsampling = 4;
+spatial_downsampling = 2;
+
 dirName = pwd;
 avifolder = [dirName filesep 'Miniscope'];
 Process_ConcatenateAVI(avifolder, spatial_downsampling);
@@ -27,15 +28,15 @@ cd([newDir filesep newfoldername]);
 
 % rename analogin and tracking
 files = dir('Take*.csv');
-fname = files.name;
-if exist(fname, 'file')
+if exist(files.name, 'file')
+    fname = files.name;
     targetFile = fullfile(pwd, [mergename '_0.csv']);
     movefile(fname, targetFile);
 end
 
 files = dir('Take*.tak');
-fname = files.name;
-if exist(fname, 'file')
+if exist(files.name, 'file')
+    fname = files.name;
     targetFile = fullfile(pwd, [mergename '_0.tak']);
     movefile(fname, targetFile);
 end
