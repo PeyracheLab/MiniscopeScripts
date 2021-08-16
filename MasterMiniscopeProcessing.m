@@ -58,6 +58,7 @@ movefile(jsonfile.name, fullfile(pwd, [mergename '.json']));
 
 % move miniscope timestamps in case
 tstamps = dir('Miniscope/*.csv');
+
 movefile(fullfile(tstamps.folder, tstamps.name), fullfile(pwd, [mergename '_ms_ts.csv']));
 
 %cleaning
@@ -77,9 +78,10 @@ neuron = Process_cnmfe(fullfile(pwd, [mergename '.h5']));
 
 %% Exporting
 % save as csv
-%csvwrite('A0634-201120_A.csv', neuron.A);
 csvwrite(fullfile(pwd, [mergename '_C.csv']), neuron.C);
 csvwrite(fullfile(pwd, [mergename '_A.csv']), neuron.A);
+csvwrite(fullfile(pwd, [mergename '_C_raw.csv']), neuron.C_raw);
+csvwrite(fullfile(pwd, [mergename '_S.csv']), neuron.S);
 neuron.save_neurons();
-
+neuron.save_results([mergename '_cnmfe.mat']);
 end

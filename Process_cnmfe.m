@@ -18,20 +18,56 @@ nams = neuron.select_multiple_files(nams);
 %     'memory_size_per_patch', 1, ...   % GB, space for loading data within one patch 
 %     'patch_dims', [64, 64],...  %GB, patch size 
 %     'batch_frames', 400);           % number of frames per batch 
-pars_envs = struct('memory_size_to_use', 100, ...   % GB, memory space you allow to use in MATLAB 
-    'memory_size_per_patch', 16, ...   % GB, space for loading data within one patch 
-    'patch_dims', [64, 64],...  %GB, patch size 
-    'batch_frames', 8000);           % number of frames per batch 
-  
+% pars_envs = struct('memory_size_to_use', 100, ...   % GB, memory space you allow to use in MATLAB 
+%     'memory_size_per_patch', 16, ...   % GB, space for loading data within one patch 
+%     'patch_dims', [12, 12],...  %GB, patch size 
+%     'batch_frames', 6000);           % number of frames per batch 
+pars_envs = struct('memory_size_to_use', 50, ...   % GB, memory space you allow to use in MATLAB 
+   'memory_size_per_patch', 24, ...   % GB, space for loading data within one patch 
+   'patch_dims', [60, 60],...  %GB, patch size 
+    'batch_frames', 40000);           % number of frames per batch 
+
+
 % -------------------------      SPATIAL      -------------------------  %
-% gSig = 3;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-% gSiz = 13;          % pixel, neuron diameter
+if contains(filename, 'A06')
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%POSTSUBICULUM
+    gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+    gSiz = 16;          % pixel, neuron diameter
+    min_corr = 0.95;     % minimum local correlation for a seeding pixel
+    min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
+    fprintf('Parameters for postsubiculum\n');
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif contains(filename, 'A65')
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%RETROSPLENIAL
+    gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+    gSiz = 16;          % pixel, neuron diameter
+    min_corr = 0.95;     % minimum local correlation for a seeding pixel
+    min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
+    fprintf('Parameters for retrosplenial\n');
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif contains(filename, 'A13')
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%RETROSPLENIAL
+    gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+    gSiz = 16;          % pixel, neuron diameter
+    min_corr = 0.95;     % minimum local correlation for a seeding pixel
+    min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
+    fprintf('Parameters for retrosplenial\n');
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+else
+    fprintf('New experimental number, please select new parameters\n');
+end
+    
 
-% gSig = 8;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-% gSiz = 32;          % pixel, neuron diameter
 
-gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-gSiz = 16;          % pixel, neuron diameter
+%gSig = 8;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+%gSiz = 24;          % pixel, neuron diameter
+
+% normal one
+% gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+% gSiz = 16;          % pixel, neuron diameter
 
 
 ssub = 1;           % spatial downsampling factor
@@ -82,8 +118,10 @@ merge_thr_spatial = [0.8, 0.4, -inf];  % merge components with highly correlated
 
 % -------------------------  INITIALIZATION   -------------------------  %
 K = [];             % maximum number of neurons per patch. when K=[], take as many as possible.
-min_corr = 0.95;     % minimum local correlation for a seeding pixel
-min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
+% min_corr = 0.95;     % minimum local correlation for a seeding pixel
+% min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
+
+
 min_pixel = gSig^2;      % minimum number of nonzero pixels for each neuron
 bd = 0;             % number of rows/columns to be ignored in the boundary (mainly for motion corrected data)
 frame_range = [];   % when [], uses all frames
@@ -139,7 +177,8 @@ neuron.Fs = Fs;
 neuron.getReady_batch(pars_envs); 
 
 %% initialize neurons in batch mode 
-neuron.initComponents_batch(K, save_initialization, use_parallel); 
+%neuron.initComponents_batch(K, save_initialization, use_parallel); 
+neuron.initComponents_batch(K, save_initialization, false); 
 
 % neuron.compactSpatial();
 % figure();
@@ -167,7 +206,7 @@ neuron.correlation_pnr_batch();
 
 %% concatenate temporal components 
 neuron.concatenate_temporal_batch(); 
-neuron.viewNeurons([],neuron.C_raw); 
+%neuron.viewNeurons([],neuron.C_raw); 
 
 %% save workspace 
 %neuron.save_workspace_batch(); 

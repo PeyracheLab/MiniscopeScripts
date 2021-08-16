@@ -6,18 +6,18 @@ neuron = Sources2D();
 %nams = {'./data_1p.tif'};          % you can put all file names into a cell array; when it's empty, manually select files 
 %nams = neuron.select_multiple_files(nams);  %if nam is [], then select data interactively 
 
-nams = {'/media/DataAdrienBig/PeyracheLabData/Guillaume/A0600/A0634/2020_11_26/17_54_36/msvideo.h5'};
+nams = {'/media/DataAdrienBig/PeyracheLabData/Guillaume/A0600/A0634/A0634-210131/A0634-210131.h5'};
 nams = neuron.select_multiple_files(nams);  
 
 %% parameters  
 % -------------------------    COMPUTATION    -------------------------  %
 pars_envs = struct('memory_size_to_use', 8, ...   % GB, memory space you allow to use in MATLAB 
-    'memory_size_per_patch', 1, ...   % GB, space for loading data within one patch 
+    'memory_size_per_patch', 16, ...   % GB, space for loading data within one patch 
     'patch_dims', [64, 64],...  %GB, patch size 
-    'batch_frames', 400);           % number of frames per batch 
+    'batch_frames', 8000);           % number of frames per batch 
   % -------------------------      SPATIAL      -------------------------  %
-gSig = 3;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-gSiz = 13;          % pixel, neuron diameter
+gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+gSiz = 12;          % pixel, neuron diameter
 ssub = 1;           % spatial downsampling factor
 with_dendrites = false;   % with dendrites or not
 if with_dendrites
@@ -37,7 +37,7 @@ spatial_algorithm = 'hals';
 % -------------------------      TEMPORAL     -------------------------  %
 Fs = 30;             % frame rate
 tsub = 1;           % temporal downsampling factor
-deconv_options = struct('type', 'ar1', ... % model of the calcium traces. {'ar1', 'ar2'}
+deconv_options = struct('type', 'ar2', ... % model of the calcium traces. {'ar1', 'ar2'}
     'method', 'foopsi', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
     'smin', -5, ...         % minimum spike size. When the value is negative, the actual threshold is abs(smin)*noise level
     'optimize_pars', true, ...  % optimize AR coefficients
@@ -66,8 +66,8 @@ merge_thr_spatial = [0.8, 0.4, -inf];  % merge components with highly correlated
 
 % -------------------------  INITIALIZATION   -------------------------  %
 K = [];             % maximum number of neurons per patch. when K=[], take as many as possible.
-min_corr = 0.8;     % minimum local correlation for a seeding pixel
-min_pnr = 8;       % minimum peak-to-noise ratio for a seeding pixel
+min_corr = 0.9;     % minimum local correlation for a seeding pixel
+min_pnr = 20;       % minimum peak-to-noise ratio for a seeding pixel
 min_pixel = gSig^2;      % minimum number of nonzero pixels for each neuron
 bd = 0;             % number of rows/columns to be ignored in the boundary (mainly for motion corrected data)
 frame_range = [];   % when [], uses all frames
@@ -121,6 +121,8 @@ neuron.Fs = Fs;
 
 %% distribute data and be ready to run source extraction 
 neuron.getReady_batch(pars_envs); 
+
+
 
 %% initialize neurons in batch mode 
 neuron.initComponents_batch(K, save_initialization, use_parallel); 

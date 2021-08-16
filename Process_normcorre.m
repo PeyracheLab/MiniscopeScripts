@@ -34,6 +34,7 @@ else
 end
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
+%options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',200,'max_shift',20,'iter',1,'correct_bidir',false);
 options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',200,'max_shift',20,'iter',1,'correct_bidir',false);
 
 %% register using the high pass filtered data and apply shifts to original data
@@ -49,17 +50,17 @@ tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts
 [cM1f,mM1f,vM1f] = motion_metrics(Mr,options_r.max_shift);
 
 %% plot rigid shifts and metrics
-shifts_r = squeeze(cat(3,shifts1(:).shifts));
-figure;
-    subplot(311); plot(shifts_r);
-        title('Rigid shifts','fontsize',14,'fontweight','bold');
-        legend('y-shifts','x-shifts');
-    subplot(312); plot(1:T,cY,1:T,cM1);
-        title('Correlation coefficients on filtered movie','fontsize',14,'fontweight','bold');
-        legend('raw','rigid');
-    subplot(313); plot(1:T,cYf,1:T,cM1f);
-        title('Correlation coefficients on full movie','fontsize',14,'fontweight','bold');
-        legend('raw','rigid');
+% shifts_r = squeeze(cat(3,shifts1(:).shifts));
+% figure;
+%     subplot(311); plot(shifts_r);
+%         title('Rigid shifts','fontsize',14,'fontweight','bold');
+%         legend('y-shifts','x-shifts');
+%     subplot(312); plot(1:T,cY,1:T,cM1);
+%         title('Correlation coefficients on filtered movie','fontsize',14,'fontweight','bold');
+%         legend('raw','rigid');
+%     subplot(313); plot(1:T,cYf,1:T,cM1f);
+%         title('Correlation coefficients on full movie','fontsize',14,'fontweight','bold');
+%         legend('raw','rigid');
 
 %% now apply non-rigid motion correction
 % non-rigid motion correction is likely to produce very similar results
@@ -166,6 +167,6 @@ figure;
 
 outname = [pwd filesep mergename '.h5'];
 
-saveash5(Mr, outname);
+saveash5(Mr(bound:end-bound,bound:end-bound,:), outname);
 %saveash5(Mpr, outname);
 
