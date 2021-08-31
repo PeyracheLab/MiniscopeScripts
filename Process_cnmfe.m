@@ -4,7 +4,7 @@ function neuron = Process_cnmfe(filename, varargin)
 %% clear the workspace and select data 
 %clear; clc; close all;
 
-%filename = '/media/DataAdrienBig/PeyracheLabData/Guillaume/A0600/A0634/A0634-201124/A0634-201124.h5';
+%filename = '/media/guillaume/Elements/A0600/A0634/A0634-210419/A0634-210419.h5';
 
 %% choose multiple datasets or just one  
 neuron = Sources2D(); 
@@ -22,18 +22,18 @@ nams = neuron.select_multiple_files(nams);
 %     'memory_size_per_patch', 16, ...   % GB, space for loading data within one patch 
 %     'patch_dims', [12, 12],...  %GB, patch size 
 %     'batch_frames', 6000);           % number of frames per batch 
-pars_envs = struct('memory_size_to_use', 50, ...   % GB, memory space you allow to use in MATLAB 
-   'memory_size_per_patch', 24, ...   % GB, space for loading data within one patch 
-   'patch_dims', [60, 60],...  %GB, patch size 
-    'batch_frames', 40000);           % number of frames per batch 
+pars_envs = struct('memory_size_to_use', 12, ...   % GB, memory space you allow to use in MATLAB 
+   'memory_size_per_patch', 12, ...   % GB, space for loading data within one patch 
+   'patch_dims', [200, 200],...  %GB, patch size 
+   'batch_frames', 9000);           % number of frames per batch 
 
 
 % -------------------------      SPATIAL      -------------------------  %
 if contains(filename, 'A06')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%POSTSUBICULUM
-    gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-    gSiz = 16;          % pixel, neuron diameter
+    gSig = 3;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+    gSiz = 12;          % pixel, neuron diameter
     min_corr = 0.95;     % minimum local correlation for a seeding pixel
     min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
     fprintf('Parameters for postsubiculum\n');
@@ -41,10 +41,10 @@ if contains(filename, 'A06')
 elseif contains(filename, 'A65')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%RETROSPLENIAL
-    gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-    gSiz = 16;          % pixel, neuron diameter
-    min_corr = 0.95;     % minimum local correlation for a seeding pixel
-    min_pnr = 12;       % minimum peak-to-noise ratio for a seeding pixel
+    gSig = 2;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
+    gSiz = 8;          % pixel, neuron diameter
+    min_corr = 0.8;     % minimum local correlation for a seeding pixel
+    min_pnr = 8;       % minimum peak-to-noise ratio for a seeding pixel
     fprintf('Parameters for retrosplenial\n');
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif contains(filename, 'A13')
@@ -60,15 +60,6 @@ else
     fprintf('New experimental number, please select new parameters\n');
 end
     
-
-
-%gSig = 8;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-%gSiz = 24;          % pixel, neuron diameter
-
-% normal one
-% gSig = 4;           % pixel, gaussian width of a gaussian kernel for filtering the data. 0 means no filtering
-% gSiz = 16;          % pixel, neuron diameter
-
 
 ssub = 1;           % spatial downsampling factor
 with_dendrites = false;   % with dendrites or not
@@ -89,8 +80,9 @@ spatial_algorithm = 'hals';
 % -------------------------      TEMPORAL     -------------------------  %
 Fs = 30;                % frame rate
 tsub = 1;               % temporal downsampling factor
+%deconv_flag = false
 deconv_options = struct('type', 'ar2', ... % model of the calcium traces. {'ar1', 'ar2'}
-    'method', 'foopsi', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
+    'method', 'constrained', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
     'smin', -5, ...         % minimum spike size. When the value is negative, the actual threshold is abs(smin)*noise level
     'optimize_pars', true, ...  % optimize AR coefficients
     'optimize_b', true, ...% optimize the baseline);
@@ -103,14 +95,14 @@ detrend_method = 'spline';  % compute the local minimum as an estimation of tren
 % -------------------------     BACKGROUND    -------------------------  %
 bg_model = 'ring';  % model of the background {'ring', 'svd'(default), 'nmf'}
 nb = 1;             % number of background sources for each patch (only be used in SVD and NMF model)
-bg_neuron_factor = 1.4;
+bg_neuron_factor = 2;
 ring_radius = round(bg_neuron_factor * gSiz);  % when the ring model used, it is the radius of the ring used in the background model.
 %otherwise, it's just the width of the overlapping area
-num_neighbors = 50; % number of neighbors for each neuron
+num_neighbors = 5; % number of neighbors for each neuron
 
 % -------------------------      MERGING      -------------------------  %
 show_merge = false;  % if true, manually verify the merging step
-merge_thr = 0.65;     % thresholds for merging neurons; [spatial overlap ratio, temporal correlation of calcium traces, spike correlation]
+merge_thr = 0.7;     % thresholds for merging neurons; [spatial overlap ratio, temporal correlation of calcium traces, spike correlation]
 method_dist = 'max';   % method for computing neuron distances {'mean', 'max'}
 dmin = 5;       % minimum distances between two neurons. it is used together with merge_thr
 dmin_only = 2;  % merge neurons if their distances are smaller than dmin_only.
@@ -133,13 +125,13 @@ center_psf = true;  % set the value as true when the background fluctuation is l
 % set the value as false when the background fluctuation is small (2p)
 
 % -------------------------  Residual   -------------------------  %
-min_corr_res = 0.95;
-min_pnr_res = 12;
+min_corr_res = 0.96;
+min_pnr_res = 14;
 seed_method_res = 'auto';  % method for initializing neurons from the residual
 update_sn = true;
 
 % ----------------------  WITH MANUAL INTERVENTION  --------------------  %
-with_manual_intervention = false;
+with_manual_intervention = true;
 
 % -------------------------  FINAL RESULTS   -------------------------  %
 save_demixed = true;    % save the demixed file or not
@@ -192,7 +184,7 @@ neuron.initComponents_batch(K, save_initialization, false);
 neuron.update_spatial_batch(use_parallel);
 
 %% udpate temporal components for all bataches
-neuron.update_temporal_batch(use_parallel); 
+neuron.update_temporal_batch(use_parallel);
 
 %% update background 
 neuron.update_background_batch(use_parallel); 
@@ -202,7 +194,7 @@ neuron.update_background_batch(use_parallel);
 %% merge neurons 
 
 %% get the correlation image and PNR image for all neurons 
-neuron.correlation_pnr_batch(); 
+neuron.correlation_pnr_batch();
 
 %% concatenate temporal components 
 neuron.concatenate_temporal_batch(); 

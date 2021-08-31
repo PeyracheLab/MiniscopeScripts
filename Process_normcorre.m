@@ -7,12 +7,26 @@ function Process_normcorre(filename, mergename, varargin)
 
 gcp;
 %% download data and convert to single precision
+
 Yf = read_file(filename);
+
+
+
+if contains(filename, 'A0634')
+    fprintf("Cutting data for A0634 \n");
+    Yf = Yf(50:end-100,60:end-60,:);
+elseif contains(filename, 'A6509')
+    fprintf("Cutting data for A6509 \n");
+    Yf = Yf(50:260,40:260,:);
+end
+
 [d1,d2,T] = size(Yf);
+
+%clear Yraw
 
 %% perform some sort of deblurring/high pass filtering
 
-if (1)
+if (0)
     hLarge = fspecial('average', 40);
     hSmall = fspecial('average', 2); 
     for t = 1:T
@@ -21,7 +35,7 @@ if (1)
     %Ypc = Yf - Y;
     bound = size(hLarge,1);
 else
-    gSig = 7;
+    gSig = 3;
     gSiz = 3*gSig;
     psf = fspecial('gaussian', round(2*gSiz), gSig);
     ind_nonzero = (psf(:)>=max(psf(:,1)));
@@ -32,22 +46,27 @@ else
     Y = imfilter(Yf,psf,'symmetric');
     bound = 0;
 end
+bound = 10;
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
-%options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',200,'max_shift',20,'iter',1,'correct_bidir',false);
-options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',200,'max_shift',20,'iter',1,'correct_bidir',false);
+options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',200,'max_shift',10,'iter',1,'correct_bidir',false);
+%options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',200,'max_shift',20,'iter',1,'correct_bidir',false,'memmap',true,'mem_batch_size',1000);
 
 %% register using the high pass filtered data and apply shifts to original data
 tic; [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r); toc % register filtered data
     % exclude boundaries due to high pass filtering effects
+
+clear M1;
+clear Y;
+  
 tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts to full dataset
     % apply shifts on the whole movie
 %% compute metrics 
-[cY,mY,vY] = motion_metrics(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r.max_shift);
-[cYf,mYf,vYf] = motion_metrics(Yf,options_r.max_shift);
-
-[cM1,mM1,vM1] = motion_metrics(M1,options_r.max_shift);
-[cM1f,mM1f,vM1f] = motion_metrics(Mr,options_r.max_shift);
+% [cY,mY,vY] = motion_metrics(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r.max_shift);
+% [cYf,mYf,vYf] = motion_metrics(Yf,options_r.max_shift);
+% 
+% [cM1,mM1,vM1] = motion_metrics(M1,options_r.max_shift);
+% [cM1f,mM1f,vM1f] = motion_metrics(Mr,options_r.max_shift);
 
 %% plot rigid shifts and metrics
 % shifts_r = squeeze(cat(3,shifts1(:).shifts));
@@ -115,19 +134,19 @@ tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts
 % mmYf_ds = quantile(Yf_ds(:),0.99995);
 %%  
 
-% make_avi = false; % save a movie
-% if make_avi
-%     vidObj = VideoWriter('filtered.avi');
-%     set(vidObj,'FrameRate',30);
-%     open(vidObj);
-% end
+make_avi = true; % save a movie
+if make_avi
+    vidObj = VideoWriter('filtered.avi');
+    set(vidObj,'FrameRate',30);
+    open(vidObj);
+end
 % fig = figure;
 %     screensize = get(0,'Screensize' );
 %     fac = min(min((screensize(3:4)-100)./[3*d2,d1]),10);
 %     set(gcf, 'PaperUnits', 'points', 'Units', 'points');
 %     set(gcf, 'Position', round([100 100 fac*3*d2 fac*d1]));
-% 
-% for t = 1:1:size(Y_ds,3)
+
+for t = 1:1:T
 %     if (0)
 %         % plot filtered data
 %         subplot(131);imagesc(Y_ds(:,:,t),[nnY_ds,mmY_ds]); xlabel('Raw data (downsampled)','fontsize',14,'fontweight','bold'); axis equal; axis tight;
@@ -154,18 +173,20 @@ tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts
 %         set(gca,'XTick',[],'YTick',[]);
 %     end
 %     drawnow;
-%     if make_avi  
-%         currFrame = getframe(fig);
-%         writeVideo(vidObj,currFrame);    
-%     end
-% end
-% if make_avi
-%     close(vidObj);
-% end
+    if make_avi  
+        %currFrame = getframe(fig);
+        writeVideo(vidObj,Mr(bound:end-bound,bound:end-bound,t));    
+    end
+end
+if make_avi
+    close(vidObj);
+end
 
 %toremove = 50; % pixels
 
 outname = [pwd filesep mergename '.h5'];
+
+delete(outname);
 
 saveash5(Mr(bound:end-bound,bound:end-bound,:), outname);
 %saveash5(Mpr, outname);

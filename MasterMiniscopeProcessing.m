@@ -1,4 +1,4 @@
-% Pipeline for processing the miniscope data
+cd % Pipeline for processing the miniscope data
 % USAGE: MasterPreProcessing_Intan(folder_name)
 % where folder_name is the base name for everything 
 

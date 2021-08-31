@@ -5,11 +5,11 @@
 function Batch_CNMFE
 
 
-fbasename = 'A0634';
+fbasename = 'A6509';
 
-basepath = '/media/guillaume/Elements/A0600/A0634';
+basepath = '/media/guillaume/Elements/A6500/A6509';
 
-file = '/home/guillaume/PSBImaging/python/datasets_A0634.csv';
+file = '/home/guillaume/PSBImaging/python/datasets_A6509.csv';
 
 %%
 fid = fopen(file);
@@ -32,23 +32,27 @@ end
 
 [n_folders,~] = size(file_names');
 
-
 for ii=1:n_folders
     path = [basepath '/' file_names{ii}];
     if isfolder(path)
-        cd(path)
-        mergename = file_names{ii};
-    
+        cd(path)    
+        mergename = file_names{ii}
         
+        %% Normcorre
+        % takes the raw avi file
+        avifile = fullfile(pwd, [mergename '_raw.avi']);
+        Process_normcorre(avifile, mergename);
+ 
         %% CNMF-E
         neuron = Process_cnmfe(fullfile(pwd, [mergename '.h5']));
 
         % Exporting
-        %save as csv
+        %save as csv        neuron = Process_cnmfe(fullfile(pwd, [mergename '.h5']));
+
         csvwrite(fullfile(pwd, [mergename '_C.csv']), neuron.C);
-        csvwrite(fullfile(pwd, [mergename '_A.csv']), full(neuron.A));
+        csvwrite(fullfile(pwd, [mergename '_A.csv']), neuron.A);
         csvwrite(fullfile(pwd, [mergename '_C_raw.csv']), neuron.C_raw);
-        csvwrite(fullfile(pwd, [mergename '_S.csv']), full(neuron.S));
+        csvwrite(fullfile(pwd, [mergename '_S.csv']), neuron.S);
         neuron.save_neurons();
         neuron.save_results([mergename '_cnmfe.mat']);
             
@@ -56,7 +60,9 @@ for ii=1:n_folders
         cd('~')
         %[basepath, ~] = fileparts(dirName);
         cd(basepath);
-
+        
+        
+        
     end
 end
 

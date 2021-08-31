@@ -32,31 +32,17 @@ end
 
 [n_folders,~] = size(file_names');
 
-
 for ii=1:n_folders
     path = [basepath '/' file_names{ii}];
     if isfolder(path)
         cd(path)
         mergename = file_names{ii};
+
+        %% Normcorre
+        % takes the raw avi file
+        avifile = fullfile(pwd, [mergename '_raw.avi']);
+        Process_normcorre(avifile, mergename);
     
-        
-        %% CNMF-E
-        neuron = Process_cnmfe(fullfile(pwd, [mergename '.h5']));
-
-        % Exporting
-        %save as csv
-        csvwrite(fullfile(pwd, [mergename '_C.csv']), neuron.C);
-        csvwrite(fullfile(pwd, [mergename '_A.csv']), full(neuron.A));
-        csvwrite(fullfile(pwd, [mergename '_C_raw.csv']), neuron.C_raw);
-        csvwrite(fullfile(pwd, [mergename '_S.csv']), full(neuron.S));
-        neuron.save_neurons();
-        neuron.save_results([mergename '_cnmfe.mat']);
-            
-        %pwd
-        cd('~')
-        %[basepath, ~] = fileparts(dirName);
-        cd(basepath);
-
     end
 end
 
