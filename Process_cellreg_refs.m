@@ -4,7 +4,7 @@ number = 'A0634';
 
 data_directory = '/media/guillaume/Elements';
 
-results_directory = [data_directory '/' group '/' number '/CellRegPairs'];
+results_directory = [data_directory '/' group '/' number '/CellRegRefs'];
 % Dimensions for A0634
 dims = [136,166];
 
@@ -32,15 +32,9 @@ end
 
 
 
-
-combi = nchoosek(1:length(allfile_names), 2);
-[n_combi,~] = size(combi);
-
-
-%for pair=1:n_combi
- for pair=262:n_combi   
+for ref=1:length(allfile_names)
     
-    file_names = allfile_names(combi(pair,:));
+    file_names = allfile_names;
     
     % Load csv files
     number_of_sessions = length(file_names);
@@ -84,7 +78,7 @@ combi = nchoosek(1:length(allfile_names), 2);
     use_parallel_processing=true; % either true or false
     maximal_rotation=30; % in degrees - only relevant if 'Translations and Rotations' is used
     transformation_smoothness=3; % levels of non-rigid FOV transformation smoothness (range 0.5-3)
-    reference_session_index=1; 
+    reference_session_index=ref; 
 
     % Preparing the data for alignment:
     disp('Stage 2 - Aligning sessions')
@@ -297,23 +291,26 @@ combi = nchoosek(1:length(allfile_names), 2);
     cell_registered_struct.adjustment_y_zero_padding=adjustment_zero_padding(2,:);
     %save(fullfile(results_directory,['cellRegistered_' datestr(clock,'yyyymmdd_HHMMss') '.mat']),'cell_registered_struct','-v7.3')
 
-    final_file_name = fullfile(results_directory,['cellRegistered_' int2str(combi(pair,1)-1) '_' int2str(combi(pair,2)-1) '.mat']);
+    final_file_name = fullfile(results_directory,['cellRegistered_' int2str(ref) '.mat']);
     save(final_file_name,'cell_registered_struct','-v7.3')
-
+    
+    
     
     % Saving a log file with all the chosen parameters:
+    
+    logfilename = fullfile(results_directory,['Log_' int2str(ref) '.txt']);
     comments=''; % anything written here will be added to the log file
     if strcmp(registration_approach,'Probabilistic')
         if strcmp(model_type,'Spatial correlation')
-            save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_spatial_correlations,false_positive_per_correlation_threshold,true_positive_per_correlation_threshold,MSE_spatial_correlations_model)
+            save_log_file(logfilename, results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_spatial_correlations,false_positive_per_correlation_threshold,true_positive_per_correlation_threshold,MSE_spatial_correlations_model)
         elseif strcmp(model_type,'Centroid distance')
-            save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_centroid_distances,false_positive_per_distance_threshold,true_positive_per_distance_threshold,MSE_centroid_distances_model)
+            save_log_file(logfilename, results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_centroid_distances,false_positive_per_distance_threshold,true_positive_per_distance_threshold,MSE_centroid_distances_model)
         end
     elseif strcmp(registration_approach,'Simple threshold')
         if strcmp(model_type,'Spatial correlation')
-            save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
+            save_log_file(logfilename, results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
         elseif strcmp(model_type,'Centroid distance')
-            save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
+            save_log_file(logfilename, results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
         end
     end
     disp([num2str(size(optimal_cell_to_index_map,1)) ' cells were found'])

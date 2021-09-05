@@ -73,6 +73,7 @@ end
 
 
 
+
 figures_visibility='off'; % either 'on' or 'off' (in any case figures are saved)
 
         
@@ -102,7 +103,7 @@ alignment_type='Non-rigid'; % either 'Translations', 'Translations and Rotations
 use_parallel_processing=true; % either true or false
 maximal_rotation=30; % in degrees - only relevant if 'Translations and Rotations' is used
 transformation_smoothness=3; % levels of non-rigid FOV transformation smoothness (range 0.5-3)
-reference_session_index=12; 
+reference_session_index=18; 
 
 % Preparing the data for alignment:
 disp('Stage 2 - Aligning sessions')
@@ -315,22 +316,22 @@ cell_registered_struct.adjustment_x_zero_padding=adjustment_zero_padding(1,:);
 cell_registered_struct.adjustment_y_zero_padding=adjustment_zero_padding(2,:);
 save(fullfile(results_directory,['cellRegistered_' datestr(clock,'yyyymmdd_HHMMss') '.mat']),'cell_registered_struct','-v7.3')
 
-% Saving a log file with all the chosen parameters:
-comments=''; % anything written here will be added to the log file
-if strcmp(registration_approach,'Probabilistic')
-    if strcmp(model_type,'Spatial correlation')
-        save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_spatial_correlations,false_positive_per_correlation_threshold,true_positive_per_correlation_threshold,MSE_spatial_correlations_model)
-    elseif strcmp(model_type,'Centroid distance')
-        save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_centroid_distances,false_positive_per_distance_threshold,true_positive_per_distance_threshold,MSE_centroid_distances_model)
-    end
-elseif strcmp(registration_approach,'Simple threshold')
-    if strcmp(model_type,'Spatial correlation')
-        save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
-    elseif strcmp(model_type,'Centroid distance')
-        save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
-    end
-end
+% % Saving a log file with all the chosen parameters:
+% comments=''; % anything written here will be added to the log file
+% if strcmp(registration_approach,'Probabilistic')
+%     if strcmp(model_type,'Spatial correlation')
+%         save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_spatial_correlations,false_positive_per_correlation_threshold,true_positive_per_correlation_threshold,MSE_spatial_correlations_model)
+%     elseif strcmp(model_type,'Centroid distance')
+%         save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments,uncertain_fraction_centroid_distances,false_positive_per_distance_threshold,true_positive_per_distance_threshold,MSE_centroid_distances_model)
+%     end
+% elseif strcmp(registration_approach,'Simple threshold')
+%     if strcmp(model_type,'Spatial correlation')
+%         save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
+%     elseif strcmp(model_type,'Centroid distance')
+%         save_log_file(results_directory,file_names,microns_per_pixel,adjusted_x_size,adjusted_y_size,alignment_type,reference_session_index,maximal_distance,number_of_bins,initial_registration_type,initial_threshold,registration_approach,model_type,final_threshold,optimal_cell_to_index_map,cell_registered_struct,comments)
+%     end
+% end
 disp([num2str(size(optimal_cell_to_index_map,1)) ' cells were found'])
-disp('End of cell registration procedure')
+    disp('End of cell registration procedure')
 
 
