@@ -1,18 +1,28 @@
 %% Setting paths for the cell registration procedure:
 group = 'A0600';
-number = 'A0634';
+number = 'A0642';
 
-data_directory = '/media/guillaume/Elements';
+data_directory = '/mnt/DataRAID/MINISCOPE';
+
 
 results_directory = [data_directory '/' group '/' number '/CellRegRefs'];
 % Dimensions for A0634
-dims = [136,166];
+if strcmp(number, 'A0634')
+    dims = [136,166];
+elseif strcmp(number, 'A0642')
+    dims = [211,201];    
+elseif strcmp(number, 'A6509')
+    dims = [192,202];
+elseif strcmp(number, 'A6510')
+    dims = [251,192];    
+end
 
-figures_directory = [data_directory '/' group '/' number '/CellRegPairs/Figures'];
+
+figures_directory = [data_directory '/' group '/' number '/CellRegRefs/Figures'];
 figures_visibility = 'off'; % either 'on' or 'off' (in any case figures are saved)
 
 %%
-file = '/home/guillaume/PSBImaging/python/datasets_A0634.csv';
+file = '/home/guillaume/PSBImaging/python/datasets_A0642.csv';
 fid = fopen(file);
 for l=1:6
     tline = fgetl(fid);    
